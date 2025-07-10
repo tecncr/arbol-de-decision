@@ -19,10 +19,10 @@ const createInitialNode = (id: string, name: string, branchCount: number = 3): P
   }
   
   return {
-    id,
-    name,
-    branches,
-    expectedValue: 0
+  id,
+  name,
+  branches,
+  expectedValue: 0
   };
 };
 
@@ -209,18 +209,17 @@ export const DecisionTreeComponent: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 mb-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 mb-8 justify-items-center">
-            {tree.nodes.map((node, index) => (
-              <ProbabilityNodeComponent
-                key={node.id}
-                node={node}
-                onUpdateNode={handleUpdateNode}
-                onDeleteNode={() => handleDeleteNode(node.id)}
-                nodeNumber={index + 1}
-                canDelete={tree.nodes.length > 1}
-              />
-            ))}
-          </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 mb-8 justify-items-center">
+          {tree.nodes.map((node, index) => (
+            <ProbabilityNodeComponent
+              key={node.id}
+              node={node}
+              onUpdateNode={handleUpdateNode}
+              onDeleteNode={() => handleDeleteNode(node.id)}
+              nodeNumber={index + 1}
+              canDelete={tree.nodes.length > 1}
+            />
+          ))}
         </div>
 
         <div className="mb-8">
