@@ -1,15 +1,23 @@
 import React from 'react';
-import { TrendingUp, AlertCircle } from 'lucide-react';
+import { TrendingUp, AlertCircle, Plus, Minus } from 'lucide-react';
 import type { ProbabilityNode, ValidationResult } from '../types/tree';
 import { validateProbabilities, calculateExpectedValue, formatCurrency } from '../utils/calculations';
 
 interface Props {
   node: ProbabilityNode;
   onUpdateNode: (node: ProbabilityNode) => void;
+  onDeleteNode: () => void;
   nodeNumber: number;
+  canDelete: boolean;
 }
 
-export const ProbabilityNodeComponent: React.FC<Props> = ({ node, onUpdateNode, nodeNumber }) => {
+export const ProbabilityNodeComponent: React.FC<Props> = ({ 
+  node, 
+  onUpdateNode, 
+  onDeleteNode, 
+  nodeNumber, 
+  canDelete 
+}) => {
   const validation: ValidationResult = validateProbabilities(node.branches);
   const expectedValue = calculateExpectedValue(node.branches);
   
@@ -62,6 +70,33 @@ export const ProbabilityNodeComponent: React.FC<Props> = ({ node, onUpdateNode, 
     });
   };
   
+  const addBranch = () => {
+    const newBranch = {
+      id: `${node.id}-${Date.now()}`,
+      probability: 0,
+      value: 0,
+      label: `Rama ${node.branches.length + 1}`
+    };
+    
+    const newBranches = [...node.branches, newBranch];
+    onUpdateNode({
+      ...node,
+      branches: newBranches,
+      expectedValue: calculateExpectedValue(newBranches)
+    });
+  };
+  
+  const removeBranch = (branchIndex: number) => {
+    if (node.branches.length <= 1) return;
+    
+    const newBranches = node.branches.filter((_, index) => index !== branchIndex);
+    onUpdateNode({
+      ...node,
+      branches: newBranches,
+      expectedValue: calculateExpectedValue(newBranches)
+    });
+  };
+  
   const totalProbability = node.branches.reduce((sum, branch) => sum + branch.probability, 0);
   
   return (
@@ -82,15 +117,34 @@ export const ProbabilityNodeComponent: React.FC<Props> = ({ node, onUpdateNode, 
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
           />
         </div>
+        {canDelete && (
+          <button
+            onClick={onDeleteNode}
+            className="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-2 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
+            title="Eliminar nodo"
+          >
+            <Minus className="w-5 h-5" />
+          </button>
+        )}
       </div>
       
       <div className="space-y-4 mb-6">
         {node.branches.map((branch, index) => (
           <div key={branch.id} className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-            <div className="mb-3">
-              <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+            <div className="flex justify-between items-center mb-3">
+              <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">
                 Nombre de la Rama {index + 1}
               </label>
+              {node.branches.length > 1 && (
+                <button
+                  onClick={() => removeBranch(index)}
+                  className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 p-1"
+                  title="Eliminar rama"
+                >
+                  <Minus className="w-4 h-4" />
+                </button>
+              )}
+            </div>
               <input
                 type="text"
                 value={branch.label}
@@ -98,7 +152,6 @@ export const ProbabilityNodeComponent: React.FC<Props> = ({ node, onUpdateNode, 
                 placeholder={`Rama ${index + 1}`}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
               />
-            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
@@ -131,6 +184,14 @@ export const ProbabilityNodeComponent: React.FC<Props> = ({ node, onUpdateNode, 
             </div>
           </div>
         ))}
+        
+        <button
+          onClick={addBranch}
+          className="w-full bg-blue-50 dark:bg-blue-900/20 border-2 border-dashed border-blue-300 dark:border-blue-700 rounded-lg p-4 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors flex items-center justify-center gap-2"
+        >
+          <Plus className="w-5 h-5" />
+          Agregar Rama
+        </button>
       </div>
       
       <div className="border-t pt-4">

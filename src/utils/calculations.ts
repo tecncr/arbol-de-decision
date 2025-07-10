@@ -27,7 +27,7 @@ export const validateProbabilities = (branches: Array<{ probability: number }>):
 export const calculateTreeValue = (nodes: ProbabilityNode[]): number => {
   if (nodes.length === 0) return 0;
   
-  // Para dos nodos, el valor final es el promedio de los valores esperados
+  // El valor final es el promedio de los valores esperados de todos los nodos
   const totalExpectedValue = nodes.reduce((sum, node) => sum + node.expectedValue, 0);
   return totalExpectedValue / nodes.length;
 };

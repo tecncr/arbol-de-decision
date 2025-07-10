@@ -1,19 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { Calculator, RotateCcw, Save, Download, Upload, TreeDeciduous } from 'lucide-react';
+import { Calculator, RotateCcw, Save, Download, Upload, TreeDeciduous, Plus } from 'lucide-react';
 import { ProbabilityNodeComponent } from './ProbabilityNode';
+import { TreeVisualization } from './TreeVisualization';
 import type { DecisionTree, ProbabilityNode } from '../types/tree';
 import { calculateTreeValue, formatCurrency, validateProbabilities } from '../utils/calculations';
 
-const createInitialNode = (id: string, name: string): ProbabilityNode => ({
+const createInitialNode = (id: string, name: string, branchCount: number = 3): ProbabilityNode => {
+  const equalProbability = 100 / branchCount;
+  const branches = [];
+  
+  for (let i = 0; i < branchCount; i++) {
+    branches.push({
+      id: `${id}-${i + 1}`,
+      probability: i === branchCount - 1 ? 100 - (equalProbability * (branchCount - 1)) : equalProbability,
+      value: 0,
+      label: i === 0 ? 'Optimista' : i === 1 ? 'Probable' : i === 2 ? 'Pesimista' : `Rama ${i + 1}`
+    });
+  }
+  
+  return {
   id,
   name,
-  branches: [
-    { id: `${id}-1`, probability: 33.33, value: 0, label: 'Optimista' },
-    { id: `${id}-2`, probability: 33.33, value: 0, label: 'Probable' },
-    { id: `${id}-3`, probability: 33.34, value: 0, label: 'Pesimista' }
-  ],
+  branches,
   expectedValue: 0
-});
+  };
+};
 
 export const DecisionTreeComponent: React.FC = () => {
   const [tree, setTree] = useState<DecisionTree>({
@@ -21,7 +32,8 @@ export const DecisionTreeComponent: React.FC = () => {
       createInitialNode('node1', 'Escenario A'),
       createInitialNode('node2', 'Escenario B')
     ],
-    finalExpectedValue: 0
+    finalExpectedValue: 0,
+    calculationMethod: 'average'
   });
 
   const [savedTrees, setSavedTrees] = useState<string[]>([]);
@@ -47,6 +59,23 @@ export const DecisionTreeComponent: React.FC = () => {
     }));
   };
 
+  const handleAddNode = () => {
+    const newNodeId = `node${Date.now()}`;
+    const newNode = createInitialNode(newNodeId, `Escenario ${String.fromCharCode(65 + tree.nodes.length)}`);
+    
+    setTree(prev => ({
+      ...prev,
+      nodes: [...prev.nodes, newNode]
+    }));
+  };
+
+  const handleDeleteNode = (nodeId: string) => {
+    setTree(prev => ({
+      ...prev,
+      nodes: prev.nodes.filter(node => node.id !== nodeId)
+    }));
+  };
+
   const handleCalculate = () => {
     const newFinalValue = calculateTreeValue(tree.nodes);
     setTree(prev => ({ ...prev, finalExpectedValue: newFinalValue }));
@@ -58,7 +87,8 @@ export const DecisionTreeComponent: React.FC = () => {
         createInitialNode('node1', 'Escenario A'),
         createInitialNode('node2', 'Escenario B')
       ],
-      finalExpectedValue: 0
+      finalExpectedValue: 0,
+      calculationMethod: 'average'
     });
   };
 
@@ -145,6 +175,13 @@ export const DecisionTreeComponent: React.FC = () => {
               Reiniciar
             </button>
             <button
+              onClick={handleAddNode}
+              className="flex items-center gap-2 bg-green-600 dark:bg-green-700 text-white px-6 py-3 rounded-lg hover:bg-green-700 dark:hover:bg-green-600 transition-colors shadow-lg"
+            >
+              <Plus className="w-5 h-5" />
+              Agregar Nodo
+            </button>
+            <button
               onClick={handleSave}
               className="flex items-center gap-2 bg-green-600 dark:bg-green-700 text-white px-6 py-3 rounded-lg hover:bg-green-700 dark:hover:bg-green-600 transition-colors shadow-lg"
             >
@@ -171,15 +208,21 @@ export const DecisionTreeComponent: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 mb-8">
           {tree.nodes.map((node, index) => (
             <ProbabilityNodeComponent
               key={node.id}
               node={node}
               onUpdateNode={handleUpdateNode}
+              onDeleteNode={() => handleDeleteNode(node.id)}
               nodeNumber={index + 1}
+              canDelete={tree.nodes.length > 1}
             />
           ))}
+        </div>
+
+        <div className="mb-8">
+          <TreeVisualization tree={tree} />
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 border-2 border-gray-100 dark:border-gray-700">

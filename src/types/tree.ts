@@ -15,6 +15,7 @@ export interface ProbabilityNode {
 export interface DecisionTree {
   nodes: ProbabilityNode[];
   finalExpectedValue: number;
+  calculationMethod: 'average' | 'weighted';
 }
 
 export interface ValidationResult {
