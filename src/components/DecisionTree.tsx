@@ -209,7 +209,6 @@ export const DecisionTreeComponent: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 mb-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 mb-8 justify-items-center">
           {tree.nodes.map((node, index) => (
             <ProbabilityNodeComponent
               key={node.id}
