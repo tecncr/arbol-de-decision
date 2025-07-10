@@ -48,6 +48,20 @@ export const ProbabilityNodeComponent: React.FC<Props> = ({ node, onUpdateNode, 
     });
   };
   
+  const handleBranchLabelChange = (branchIndex: number, label: string) => {
+    const newBranches = [...node.branches];
+    newBranches[branchIndex] = {
+      ...newBranches[branchIndex],
+      label
+    };
+    
+    onUpdateNode({
+      ...node,
+      branches: newBranches,
+      expectedValue: calculateExpectedValue(newBranches)
+    });
+  };
+  
   const totalProbability = node.branches.reduce((sum, branch) => sum + branch.probability, 0);
   
   return (
@@ -73,9 +87,18 @@ export const ProbabilityNodeComponent: React.FC<Props> = ({ node, onUpdateNode, 
       <div className="space-y-4 mb-6">
         {node.branches.map((branch, index) => (
           <div key={branch.id} className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-            <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-3">
-              Rama {index + 1}
-            </h4>
+            <div className="mb-3">
+              <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+                Nombre de la Rama {index + 1}
+              </label>
+              <input
+                type="text"
+                value={branch.label}
+                onChange={(e) => handleBranchLabelChange(index, e.target.value)}
+                placeholder={`Rama ${index + 1}`}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
+              />
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
